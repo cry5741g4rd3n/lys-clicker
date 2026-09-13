@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>클리커 사이트</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      background-color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    /* 우상단 카운터 */
+    #counter {
+      position: absolute;
+      top: 20px;
+      right: 25px;
+      font-size: 2rem;
+      font-weight: 800;
+      color: #222222;
+      z-index: 10;
+    }
+
+    /* 중앙 이미지 영역 */
+    .img-container {
+      width: 45vw;
+      max-width: 320px;
+      min-width: 180px;
+      aspect-ratio: 1 / 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .img-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      pointer-events: none;
+      transition: transform 0.05s ease;
+    }
+
+    /* 보용보용 효과 클래스 */
+    .boyong {
+      animation: boyongAnim 0.35s ease-in-out;
+    }
+
+    @keyframes boyongAnim {
+      0% {
+        transform: scale(1);
+      }
+      30% {
+        transform: scale(0.82, 1.22);
+      }
+      60% {
+        transform: scale(1.18, 0.85);
+      }
+      80% {
+        transform: scale(0.95, 1.05);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="counter">0</div>
+
+  <div class="img-container">
+    <img id="click-img" src="" alt="클릭 이미지">
+  </div>
+
+  <script>
+    // 본인의 이미지 파일 경로로 수정해 주세요 (예: ["./img1.png", "./img2.png"])
+const images = [
+  "./img1.png",
+  "./img2.png"
+];
+
+    const counterEl = document.getElementById('counter');
+    const imgEl = document.getElementById('click-img');
+
+    // 1. LocalStorage에서 총 누적 클릭 수 불러오기
+    let count = parseInt(localStorage.getItem('click_count')) || 0;
+    counterEl.textContent = count;
+
+    // 5 ~ 30 사이의 랜덤한 클릭 횟수 반환 함수
+    function getRandomTarget() {
+      return Math.floor(Math.random() * (30 - 5 + 1)) + 5;
+    }
+
+    // 현재 이미지 변경까지 남은 클릭 수 설정
+    let targetClicks = getRandomTarget();
+    let clicksSinceLastChange = 0;
+
+    // 초기 이미지 설정
+    let currentIndex = 0;
+    imgEl.src = images[currentIndex];
+
+    // 화면 클릭/터치 이벤트
+    document.body.addEventListener('pointerdown', (e) => {
+      // 총 횟수 증가 및 저장
+      count++;
+      clicksSinceLastChange++;
+      counterEl.textContent = count;
+      localStorage.setItem('click_count', count);
+
+      // 설정된 랜덤 횟수(5~30회)에 도달했을 때 이미지 전환
+      if (clicksSinceLastChange >= targetClicks) {
+        currentIndex = (currentIndex + 1) % images.length;
+        imgEl.src = images[currentIndex];
+
+        // 다음 전환을 위한 랜덤 횟수 재설정 및 카운터 초기화
+        targetClicks = getRandomTarget();
+        clicksSinceLastChange = 0;
+      }
+
+      // 보용보용 애니메이션 초기화 후 재실행
+      imgEl.classList.remove('boyong');
+      void imgEl.offsetWidth; // 리플로우 강제 (애니메이션 리셋)
+      imgEl.classList.add('boyong');
+    });
+  </script>
+</body>
+</html>
